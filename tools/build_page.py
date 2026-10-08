@@ -48,5 +48,6 @@ codes = "".join(
 
 page = (root / "tools" / "page_template.html").read_text()
 page = page.replace("{{SVG}}", "\n".join(svg)).replace("{{LEGEND}}", legend).replace("{{CODES}}", codes)
+page = page.replace("{{DATA}}", json.dumps(d)).replace("{{JS}}", (root / "tools" / "stepper.js").read_text())
 (root / "th5-farming-base.html").write_text(page)
 print("wrote th5-farming-base.html")

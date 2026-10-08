@@ -64,6 +64,25 @@ table { border-collapse: collapse; width: 100%; font-size: .95rem; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font: 500 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 td:first-child { font-variant-numeric: tabular-nums; color: var(--muted); width: 2em; }
+
+.stepper { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 14px; }
+.step-head { display: grid; gap: 6px; min-height: 9.5em; }
+.step-head h3 { font-family: var(--display); font-weight: 400; font-size: 1.3rem; margin: 0; }
+.iso svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.iso .tile { stroke: rgba(0,0,0,.25); stroke-width: .06; }
+.iso .old { opacity: .45; }
+.iso .new { stroke: var(--fg); stroke-width: .22; }
+.iso text { font-family: var(--mono); font-weight: 500; text-anchor: middle; dominant-baseline: central; fill: var(--label); pointer-events: none; }
+.iso text.dark { fill: var(--label-dark); }
+.iso .centre { fill: none; stroke: var(--fg); stroke-width: .12; stroke-dasharray: .4 .3; }
+.step-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.step-nav button { font: 700 1rem var(--body); padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.step-nav button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.step-nav button:disabled { opacity: .4; cursor: default; }
+.step-nav button:focus-visible, .dots button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-width: 0; }
+.dots button { width: 12px; height: 12px; padding: 0; border-radius: 50%; border: 1px solid var(--muted); background: transparent; cursor: pointer; }
+.dots button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); }
 </style>
 
 <main>
@@ -92,17 +111,22 @@ td:first-child { font-variant-numeric: tabular-nums; color: var(--muted); width:
     <p class="note">Dark grey squares are walls (96 total). Small black squares are traps. Each faint grid line marks 4 tiles. The map shows 8 mine and 8 collector spots. Use as many as you own and leave the rest empty. The empty slot in the left ring is saved for the next defense you unlock.</p>
   </section>
 
-  <section>
-    <h2>How to build it in the game</h2>
-    <ol class="steps">
-      <li>Tap the arrows button above Shop on the bottom right to open edit mode, then choose a new layout slot.</li>
-      <li>Tap <b>Remove all buildings</b> (or <b>Remove all walls</b> first), so you start from an empty map.</li>
-      <li>Place the Town Hall a little up and left of the centre, then put a Gold Storage, Elixir Storage and the Clan Castle right next to it in a tight square.</li>
-      <li>Draw the small inner wall box around those four (9 × 9 tiles). In edit mode you can select one wall and tap <b>Select row</b> to move whole lines.</li>
-      <li>Place the ring of 11 defenses and 2 storages one tile outside the inner box, then draw the big outer box (17 × 17) around them.</li>
-      <li>Put the mines, collectors, army camps, Barracks, Lab and Spell Factory outside, with one tile gap between each.</li>
-      <li>Add the traps, save, and tap set it as your active home village layout.</li>
-    </ol>
+  <section id="build">
+    <h2>Build it step by step</h2>
+    <p>This map is tilted like the game screen, so the top corner here is the top corner of your village. Open edit mode (the arrows and hand button above <b>Shop</b>), pick an empty layout slot, then follow the steps. New pieces for each step are outlined.</p>
+    <div class="stepper">
+      <div class="step-head">
+        <span class="eyebrow" id="step-count">Step 1 of 11</span>
+        <h3 id="step-title">Clear the map</h3>
+        <p id="step-text"></p>
+      </div>
+      <div class="iso" id="iso"></div>
+      <div class="step-nav">
+        <button type="button" id="prev">Back</button>
+        <div class="dots" id="dots" role="tablist" aria-label="Steps"></div>
+        <button type="button" id="next" class="primary">Next</button>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -127,3 +151,7 @@ td:first-child { font-variant-numeric: tabular-nums; color: var(--muted); width:
     <p class="note">Spending gold and elixir often also helps. Raiders can only take loot that's sitting in your storages and collectors.</p>
   </section>
 </main>
+<script>
+const LAYOUT = {{DATA}};
+{{JS}}
+</script>
