@@ -1,0 +1,129 @@
+<title>Manju's TH5 Farming Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column; the tile map is the hero, guidance sits below it in short sections. */
+:root {
+  --bg: #eef2e6; --surface: #f8faf3; --fg: #1f2a1c; --muted: #5a6853; --line: #c9d4bc;
+  --accent: #b5651d;
+  --ground: #a9c98a; --grid: #94b676; --wall: #5b5f66;
+  --c-core: #c2742f; --c-storage: #d4a62a; --c-splash: #8a4fb8; --c-ground: #3f6f9e;
+  --c-air: #c0473f; --c-collector: #e3e0c9; --c-army: #8e8a7c; --c-trap: #2b2b2b;
+  --label: #ffffff; --label-dark: #2b2b2b;
+  --display: "Lilita One", "Arial Black", system-ui, sans-serif;
+  --body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a12; --surface: #1c2419; --fg: #e5ecdc; --muted: #9fae95; --line: #2f3a2a;
+  --accent: #e39a52; --ground: #3d5730; --grid: #4a6a3b; --wall: #b9bcc2;
+  --c-collector: #bdb99d; --c-army: #6f6b60; --c-trap: #f0f0f0; --label-dark: #1a1a1a;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141a12; --surface: #1c2419; --fg: #e5ecdc; --muted: #9fae95; --line: #2f3a2a;
+  --accent: #e39a52; --ground: #3d5730; --grid: #4a6a3b; --wall: #b9bcc2;
+  --c-collector: #bdb99d; --c-army: #6f6b60; --c-trap: #f0f0f0; --label-dark: #1a1a1a;
+  color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); font-weight: 400; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.05; }
+h2 { font-size: 1.45rem; color: var(--accent); }
+p { margin: 0; max-width: 65ch; }
+section { display: grid; gap: 14px; }
+.eyebrow { font: 500 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 12px; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+.map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.map svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.field { fill: var(--ground); }
+.grid { stroke: var(--grid); stroke-width: .06; }
+.wall { fill: var(--wall); }
+.b rect { stroke: rgba(0,0,0,.25); stroke-width: .08; }
+.b text { fill: var(--label); font-family: var(--mono); font-weight: 500; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.core rect { fill: var(--c-core); } .storage rect { fill: var(--c-storage); }
+.splash rect { fill: var(--c-splash); } .ground rect, .b.ground rect { fill: var(--c-ground); }
+.air rect { fill: var(--c-air); } .collector rect { fill: var(--c-collector); }
+.army rect { fill: var(--c-army); } .trap rect { fill: var(--c-trap); }
+.collector text, .storage text { fill: var(--label-dark); }
+.legend { list-style: none; padding: 0; margin: 12px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; font-size: .9rem; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.sw.core { background: var(--c-core); } .sw.storage { background: var(--c-storage); } .sw.splash { background: var(--c-splash); }
+.sw.ground { background: var(--c-ground); } .sw.air { background: var(--c-air); } .sw.collector { background: var(--c-collector); border: 1px solid var(--line); }
+.sw.army { background: var(--c-army); } .sw.trap { background: var(--c-trap); }
+.codes { list-style: none; padding: 0; margin: 0; columns: 3 150px; font-size: .85rem; color: var(--muted); }
+.codes b { font: 500 .8rem var(--mono); color: var(--fg); display: inline-block; min-width: 3.2em; }
+.fixes { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.fixes li { display: grid; gap: 2px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.fixes b { font-weight: 700; }
+ol.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; max-width: 65ch; }
+.note { font-size: .9rem; color: var(--muted); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-variant-numeric: tabular-nums; color: var(--muted); width: 2em; }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">Town Hall 5 · farming layout · 44 × 44 tiles</span>
+    <h1>Manju's TH5 Farming Base</h1>
+    <p class="lede">Two closed wall rings with your storages and Town Hall in the middle. Mines and collectors sit outside so raiders waste time on them before they reach anything that matters.</p>
+  </header>
+
+  <section>
+    <h2>What's hurting you right now</h2>
+    <ul class="fixes">
+      <li><b>The wall is open on the left.</b> It's a V shape with no closed loop, so ground troops walk straight in without breaking a single wall. A wall only helps if it goes all the way round.</li>
+      <li><b>Your best Archer Tower (level 6) sits outside the wall</b> on the far left, guarding only bombs and an empty patch. It belongs inside where it can cover the storages.</li>
+      <li><b>Defenses are clumped around the Town Hall, while the elixir collectors and spare wall pieces are scattered at the edges.</b> One spell or one group of Giants takes out most of your defense at once.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The layout</h2>
+    <div class="map">
+      {{SVG}}
+      <ul class="legend">{{LEGEND}}</ul>
+    </div>
+    <ul class="codes">{{CODES}}</ul>
+    <p class="note">Dark grey squares are walls (96 total). Small black squares are traps. Each faint grid line marks 4 tiles. The map shows 8 mine and 8 collector spots. Use as many as you own and leave the rest empty. The empty slot in the left ring is saved for the next defense you unlock.</p>
+  </section>
+
+  <section>
+    <h2>How to build it in the game</h2>
+    <ol class="steps">
+      <li>Tap the arrows button above Shop on the bottom right to open edit mode, then choose a new layout slot.</li>
+      <li>Tap <b>Remove all buildings</b> (or <b>Remove all walls</b> first), so you start from an empty map.</li>
+      <li>Place the Town Hall a little up and left of the centre, then put a Gold Storage, Elixir Storage and the Clan Castle right next to it in a tight square.</li>
+      <li>Draw the small inner wall box around those four (9 × 9 tiles). In edit mode you can select one wall and tap <b>Select row</b> to move whole lines.</li>
+      <li>Place the ring of 11 defenses and 2 storages one tile outside the inner box, then draw the big outer box (17 × 17) around them.</li>
+      <li>Put the mines, collectors, army camps, Barracks, Lab and Spell Factory outside, with one tile gap between each.</li>
+      <li>Add the traps, save, and tap set it as your active home village layout.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Why it works for farming</h2>
+    <p>Raiders mostly go after storages. Here every storage is behind at least one wall and covered by the Mortar, the Wizard Tower and two or more Cannons and Archer Towers at the same time. Mines and collectors outside the walls act as bait, so Barbarians and Goblins spread out on them and lose time while your defenses fire. The Clan Castle in the middle means your clan's troops come out where the fight actually is. The Air Defense and the Air Bomb sit on the bottom side together to cover against Balloons and Dragons.</p>
+  </section>
+
+  <section>
+    <h2>What to upgrade next</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>#</th><th>Upgrade</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Walls to full count, then levels</td><td>Cheap gold, and this layout only works with both rings closed.</td></tr>
+          <tr><td>2</td><td>Wizard Tower and Mortar</td><td>Splash damage wrecks the Barbarian and Archer swarms most players use at this level.</td></tr>
+          <tr><td>3</td><td>Air Defense</td><td>Balloons are the most common way people break TH5 bases.</td></tr>
+          <tr><td>4</td><td>Storages</td><td>Bigger storages have more hit points. They act as tanks in the middle of the base.</td></tr>
+          <tr><td>5</td><td>Cannons and Archer Towers</td><td>Keep them level with each other so no one side is weak.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Spending gold and elixir often also helps. Raiders can only take loot that's sitting in your storages and collectors.</p>
+  </section>
+</main>

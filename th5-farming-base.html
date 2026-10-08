@@ -1,0 +1,386 @@
+<title>Manju's TH5 Farming Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito+Sans:opsz,wght@6..12,400;6..12,700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column; the tile map is the hero, guidance sits below it in short sections. */
+:root {
+  --bg: #eef2e6; --surface: #f8faf3; --fg: #1f2a1c; --muted: #5a6853; --line: #c9d4bc;
+  --accent: #b5651d;
+  --ground: #a9c98a; --grid: #94b676; --wall: #5b5f66;
+  --c-core: #c2742f; --c-storage: #d4a62a; --c-splash: #8a4fb8; --c-ground: #3f6f9e;
+  --c-air: #c0473f; --c-collector: #e3e0c9; --c-army: #8e8a7c; --c-trap: #2b2b2b;
+  --label: #ffffff; --label-dark: #2b2b2b;
+  --display: "Lilita One", "Arial Black", system-ui, sans-serif;
+  --body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141a12; --surface: #1c2419; --fg: #e5ecdc; --muted: #9fae95; --line: #2f3a2a;
+  --accent: #e39a52; --ground: #3d5730; --grid: #4a6a3b; --wall: #b9bcc2;
+  --c-collector: #bdb99d; --c-army: #6f6b60; --c-trap: #f0f0f0; --label-dark: #1a1a1a;
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141a12; --surface: #1c2419; --fg: #e5ecdc; --muted: #9fae95; --line: #2f3a2a;
+  --accent: #e39a52; --ground: #3d5730; --grid: #4a6a3b; --wall: #b9bcc2;
+  --c-collector: #bdb99d; --c-army: #6f6b60; --c-trap: #f0f0f0; --label-dark: #1a1a1a;
+  color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 40px; }
+h1, h2 { font-family: var(--display); font-weight: 400; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.05; }
+h2 { font-size: 1.45rem; color: var(--accent); }
+p { margin: 0; max-width: 65ch; }
+section { display: grid; gap: 14px; }
+.eyebrow { font: 500 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 12px; }
+.lede { color: var(--muted); font-size: 1.05rem; }
+.map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.map svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.field { fill: var(--ground); }
+.grid { stroke: var(--grid); stroke-width: .06; }
+.wall { fill: var(--wall); }
+.b rect { stroke: rgba(0,0,0,.25); stroke-width: .08; }
+.b text { fill: var(--label); font-family: var(--mono); font-weight: 500; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.core rect { fill: var(--c-core); } .storage rect { fill: var(--c-storage); }
+.splash rect { fill: var(--c-splash); } .ground rect, .b.ground rect { fill: var(--c-ground); }
+.air rect { fill: var(--c-air); } .collector rect { fill: var(--c-collector); }
+.army rect { fill: var(--c-army); } .trap rect { fill: var(--c-trap); }
+.collector text, .storage text { fill: var(--label-dark); }
+.legend { list-style: none; padding: 0; margin: 12px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 16px; font-size: .9rem; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.sw.core { background: var(--c-core); } .sw.storage { background: var(--c-storage); } .sw.splash { background: var(--c-splash); }
+.sw.ground { background: var(--c-ground); } .sw.air { background: var(--c-air); } .sw.collector { background: var(--c-collector); border: 1px solid var(--line); }
+.sw.army { background: var(--c-army); } .sw.trap { background: var(--c-trap); }
+.codes { list-style: none; padding: 0; margin: 0; columns: 3 150px; font-size: .85rem; color: var(--muted); }
+.codes b { font: 500 .8rem var(--mono); color: var(--fg); display: inline-block; min-width: 3.2em; }
+.fixes { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.fixes li { display: grid; gap: 2px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.fixes b { font-weight: 700; }
+ol.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; max-width: 65ch; }
+.note { font-size: .9rem; color: var(--muted); }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 .75rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+td:first-child { font-variant-numeric: tabular-nums; color: var(--muted); width: 2em; }
+</style>
+
+<main>
+  <header>
+    <span class="eyebrow">Town Hall 5 · farming layout · 44 × 44 tiles</span>
+    <h1>Manju's TH5 Farming Base</h1>
+    <p class="lede">Two closed wall rings with your storages and Town Hall in the middle. Mines and collectors sit outside so raiders waste time on them before they reach anything that matters.</p>
+  </header>
+
+  <section>
+    <h2>What's hurting you right now</h2>
+    <ul class="fixes">
+      <li><b>The wall is open on the left.</b> It's a V shape with no closed loop, so ground troops walk straight in without breaking a single wall. A wall only helps if it goes all the way round.</li>
+      <li><b>Your best Archer Tower (level 6) sits outside the wall</b> on the far left, guarding only bombs and an empty patch. It belongs inside where it can cover the storages.</li>
+      <li><b>Defenses are clumped around the Town Hall, while the elixir collectors and spare wall pieces are scattered at the edges.</b> One spell or one group of Giants takes out most of your defense at once.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>The layout</h2>
+    <div class="map">
+      <svg viewBox="-1 -1 46 46" role="img" aria-label="Tile map of the TH5 farming base">
+<rect x="0" y="0" width="44" height="44" class="field"/>
+<line x1="0" y1="0" x2="0" y2="44" class="grid"/>
+<line x1="0" y1="0" x2="44" y2="0" class="grid"/>
+<line x1="4" y1="0" x2="4" y2="44" class="grid"/>
+<line x1="0" y1="4" x2="44" y2="4" class="grid"/>
+<line x1="8" y1="0" x2="8" y2="44" class="grid"/>
+<line x1="0" y1="8" x2="44" y2="8" class="grid"/>
+<line x1="12" y1="0" x2="12" y2="44" class="grid"/>
+<line x1="0" y1="12" x2="44" y2="12" class="grid"/>
+<line x1="16" y1="0" x2="16" y2="44" class="grid"/>
+<line x1="0" y1="16" x2="44" y2="16" class="grid"/>
+<line x1="20" y1="0" x2="20" y2="44" class="grid"/>
+<line x1="0" y1="20" x2="44" y2="20" class="grid"/>
+<line x1="24" y1="0" x2="24" y2="44" class="grid"/>
+<line x1="0" y1="24" x2="44" y2="24" class="grid"/>
+<line x1="28" y1="0" x2="28" y2="44" class="grid"/>
+<line x1="0" y1="28" x2="44" y2="28" class="grid"/>
+<line x1="32" y1="0" x2="32" y2="44" class="grid"/>
+<line x1="0" y1="32" x2="44" y2="32" class="grid"/>
+<line x1="36" y1="0" x2="36" y2="44" class="grid"/>
+<line x1="0" y1="36" x2="44" y2="36" class="grid"/>
+<line x1="40" y1="0" x2="40" y2="44" class="grid"/>
+<line x1="0" y1="40" x2="44" y2="40" class="grid"/>
+<line x1="44" y1="0" x2="44" y2="44" class="grid"/>
+<line x1="0" y1="44" x2="44" y2="44" class="grid"/>
+<rect x="13.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="14.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="15.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="16.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="18.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="19.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="20.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="21.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="22.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="23.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="24.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="26.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="27.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="28.08" width=".84" height=".84" class="wall"/>
+<rect x="13.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="14.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="14.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="15.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="15.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="16.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="16.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="18.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="19.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="20.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="21.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="22.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="23.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="24.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="17.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="18.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="18.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="18.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="18.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="19.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="19.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="19.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="19.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="20.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="20.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="20.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="20.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="21.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="21.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="21.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="21.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="22.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="22.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="22.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="22.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="23.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="23.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="23.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="23.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="24.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="24.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="24.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="24.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="18.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="19.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="20.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="21.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="22.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="23.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="24.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="25.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="26.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="26.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="27.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="27.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="28.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="28.08" y="29.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="13.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="14.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="15.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="16.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="17.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="18.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="19.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="20.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="21.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="22.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="23.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="24.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="25.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="26.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="27.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="28.08" width=".84" height=".84" class="wall"/>
+<rect x="29.08" y="29.08" width=".84" height=".84" class="wall"/>
+<g class="b core"><title>Town Hall (tile 18,18)</title><rect x="18.12" y="18.12" width="3.76" height="3.76" rx="0.35"/>
+<text x="20.0" y="20.0" font-size="1.0">TH</text>
+</g>
+<g class="b army"><title>Army Camp (tile 4,4)</title><rect x="4.12" y="4.12" width="3.76" height="3.76" rx="0.35"/>
+<text x="6.0" y="6.0" font-size="1.0">AC</text>
+</g>
+<g class="b army"><title>Army Camp (tile 36,4)</title><rect x="36.12" y="4.12" width="3.76" height="3.76" rx="0.35"/>
+<text x="38.0" y="6.0" font-size="1.0">AC</text>
+</g>
+<g class="b army"><title>Army Camp (tile 4,36)</title><rect x="4.12" y="36.12" width="3.76" height="3.76" rx="0.35"/>
+<text x="6.0" y="38.0" font-size="1.0">AC</text>
+</g>
+<g class="b storage"><title>Gold Storage (tile 22,18)</title><rect x="22.12" y="18.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="23.5" y="19.5" font-size="1.0">G</text>
+</g>
+<g class="b storage"><title>Elixir Storage (tile 18,22)</title><rect x="18.12" y="22.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="19.5" y="23.5" font-size="1.0">E</text>
+</g>
+<g class="b core"><title>Clan Castle (tile 22,22)</title><rect x="22.12" y="22.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="23.5" y="23.5" font-size="1.0">CC</text>
+</g>
+<g class="b ground"><title>Cannon (tile 14,14)</title><rect x="14.12" y="14.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="15.5" y="15.5" font-size="1.0">C</text>
+</g>
+<g class="b splash"><title>Wizard Tower (tile 18,14)</title><rect x="18.12" y="14.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="19.5" y="15.5" font-size="1.0">WT</text>
+</g>
+<g class="b storage"><title>Gold Storage (tile 22,14)</title><rect x="22.12" y="14.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="23.5" y="15.5" font-size="1.0">G</text>
+</g>
+<g class="b ground"><title>Archer Tower (tile 26,14)</title><rect x="26.12" y="14.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="27.5" y="15.5" font-size="1.0">AT</text>
+</g>
+<g class="b splash"><title>Mortar (tile 26,18)</title><rect x="26.12" y="18.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="27.5" y="19.5" font-size="1.0">M</text>
+</g>
+<g class="b ground"><title>Archer Tower (tile 26,22)</title><rect x="26.12" y="22.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="27.5" y="23.5" font-size="1.0">AT</text>
+</g>
+<g class="b ground"><title>Cannon (tile 26,26)</title><rect x="26.12" y="26.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="27.5" y="27.5" font-size="1.0">C</text>
+</g>
+<g class="b storage"><title>Elixir Storage (tile 22,26)</title><rect x="22.12" y="26.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="23.5" y="27.5" font-size="1.0">E</text>
+</g>
+<g class="b air"><title>Air Defense (tile 18,26)</title><rect x="18.12" y="26.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="19.5" y="27.5" font-size="1.0">AD</text>
+</g>
+<g class="b ground"><title>Archer Tower (tile 14,26)</title><rect x="14.12" y="26.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="15.5" y="27.5" font-size="1.0">AT</text>
+</g>
+<g class="b ground"><title>Cannon (tile 14,22)</title><rect x="14.12" y="22.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="15.5" y="23.5" font-size="1.0">C</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 12,9)</title><rect x="12.12" y="9.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="13.5" y="10.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 16,9)</title><rect x="16.12" y="9.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="17.5" y="10.5" font-size="1.0">EC</text>
+</g>
+<g class="b army"><title>Laboratory (tile 20,9)</title><rect x="20.12" y="9.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="21.5" y="10.5" font-size="0.8">LAB</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 24,9)</title><rect x="24.12" y="9.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="25.5" y="10.5" font-size="1.0">EC</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 28,9)</title><rect x="28.12" y="9.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="29.5" y="10.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 12,31)</title><rect x="12.12" y="31.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="13.5" y="32.5" font-size="1.0">EC</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 16,31)</title><rect x="16.12" y="31.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="17.5" y="32.5" font-size="1.0">GM</text>
+</g>
+<g class="b army"><title>Spell Factory (tile 20,31)</title><rect x="20.12" y="31.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="21.5" y="32.5" font-size="1.0">SF</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 24,31)</title><rect x="24.12" y="31.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="25.5" y="32.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 28,31)</title><rect x="28.12" y="31.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="29.5" y="32.5" font-size="1.0">EC</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 9,12)</title><rect x="9.12" y="12.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="10.5" y="13.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 9,16)</title><rect x="9.12" y="16.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="10.5" y="17.5" font-size="1.0">EC</text>
+</g>
+<g class="b army"><title>Barracks (tile 9,20)</title><rect x="9.12" y="20.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="10.5" y="21.5" font-size="1.0">B</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 9,24)</title><rect x="9.12" y="24.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="10.5" y="25.5" font-size="1.0">EC</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 9,28)</title><rect x="9.12" y="28.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="10.5" y="29.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 31,12)</title><rect x="31.12" y="12.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="32.5" y="13.5" font-size="1.0">EC</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 31,16)</title><rect x="31.12" y="16.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="32.5" y="17.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Gold Mine (tile 31,24)</title><rect x="31.12" y="24.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="32.5" y="25.5" font-size="1.0">GM</text>
+</g>
+<g class="b collector"><title>Elixir Collector (tile 31,28)</title><rect x="31.12" y="28.12" width="2.76" height="2.76" rx="0.35"/>
+<text x="32.5" y="29.5" font-size="1.0">EC</text>
+</g>
+<g class="b army"><title>Builder's Hut (tile 37,37)</title><rect x="37.12" y="37.12" width="1.76" height="1.76" rx="0.35"/>
+<text x="38.0" y="38.0" font-size="1.0">BH</text>
+</g>
+<g class="b army"><title>Builder's Hut (tile 40,37)</title><rect x="40.12" y="37.12" width="1.76" height="1.76" rx="0.35"/>
+<text x="41.0" y="38.0" font-size="1.0">BH</text>
+</g>
+<g class="b trap"><title>Spring Trap (tile 15,12)</title><rect x="15.18" y="12.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Spring Trap (tile 27,30)</title><rect x="27.18" y="30.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Spring Trap (tile 12,27)</title><rect x="12.18" y="27.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Spring Trap (tile 30,15)</title><rect x="30.18" y="15.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Bomb (tile 17,15)</title><rect x="17.18" y="15.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Bomb (tile 25,27)</title><rect x="25.18" y="27.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Bomb (tile 15,25)</title><rect x="15.18" y="25.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Bomb (tile 27,17)</title><rect x="27.18" y="17.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+<g class="b trap"><title>Air Bomb (tile 21,27)</title><rect x="21.18" y="27.18" width="0.64" height="0.64" rx="0.32"/>
+</g>
+</svg>
+      <ul class="legend"><li><span class="sw core"></span>Town Hall & Clan Castle</li><li><span class="sw storage"></span>Storages (what raiders want)</li><li><span class="sw splash"></span>Splash defense</li><li><span class="sw ground"></span>Cannon / Archer Tower</li><li><span class="sw air"></span>Air Defense</li><li><span class="sw collector"></span>Mines & collectors</li><li><span class="sw army"></span>Army buildings</li><li><span class="sw trap"></span>Traps</li></ul>
+    </div>
+    <ul class="codes"><li><b>TH</b> Town Hall</li><li><b>CC</b> Clan Castle</li><li><b>G</b> Gold Storage</li><li><b>E</b> Elixir Storage</li><li><b>M</b> Mortar</li><li><b>WT</b> Wizard Tower</li><li><b>AD</b> Air Defense</li><li><b>C</b> Cannon</li><li><b>AT</b> Archer Tower</li><li><b>GM</b> Gold Mine</li><li><b>EC</b> Elixir Collector</li><li><b>AC</b> Army Camp</li><li><b>B</b> Barracks</li><li><b>LAB</b> Laboratory</li><li><b>SF</b> Spell Factory</li><li><b>BH</b> Builder's Hut</li></ul>
+    <p class="note">Dark grey squares are walls (96 total). Small black squares are traps. Each faint grid line marks 4 tiles. The map shows 8 mine and 8 collector spots. Use as many as you own and leave the rest empty. The empty slot in the left ring is saved for the next defense you unlock.</p>
+  </section>
+
+  <section>
+    <h2>How to build it in the game</h2>
+    <ol class="steps">
+      <li>Tap the arrows button above Shop on the bottom right to open edit mode, then choose a new layout slot.</li>
+      <li>Tap <b>Remove all buildings</b> (or <b>Remove all walls</b> first), so you start from an empty map.</li>
+      <li>Place the Town Hall a little up and left of the centre, then put a Gold Storage, Elixir Storage and the Clan Castle right next to it in a tight square.</li>
+      <li>Draw the small inner wall box around those four (9 × 9 tiles). In edit mode you can select one wall and tap <b>Select row</b> to move whole lines.</li>
+      <li>Place the ring of 11 defenses and 2 storages one tile outside the inner box, then draw the big outer box (17 × 17) around them.</li>
+      <li>Put the mines, collectors, army camps, Barracks, Lab and Spell Factory outside, with one tile gap between each.</li>
+      <li>Add the traps, save, and tap set it as your active home village layout.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Why it works for farming</h2>
+    <p>Raiders mostly go after storages. Here every storage is behind at least one wall and covered by the Mortar, the Wizard Tower and two or more Cannons and Archer Towers at the same time. Mines and collectors outside the walls act as bait, so Barbarians and Goblins spread out on them and lose time while your defenses fire. The Clan Castle in the middle means your clan's troops come out where the fight actually is. The Air Defense and the Air Bomb sit on the bottom side together to cover against Balloons and Dragons.</p>
+  </section>
+
+  <section>
+    <h2>What to upgrade next</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>#</th><th>Upgrade</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Walls to full count, then levels</td><td>Cheap gold, and this layout only works with both rings closed.</td></tr>
+          <tr><td>2</td><td>Wizard Tower and Mortar</td><td>Splash damage wrecks the Barbarian and Archer swarms most players use at this level.</td></tr>
+          <tr><td>3</td><td>Air Defense</td><td>Balloons are the most common way people break TH5 bases.</td></tr>
+          <tr><td>4</td><td>Storages</td><td>Bigger storages have more hit points. They act as tanks in the middle of the base.</td></tr>
+          <tr><td>5</td><td>Cannons and Archer Towers</td><td>Keep them level with each other so no one side is weak.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Spending gold and elixir often also helps. Raiders can only take loot that's sitting in your storages and collectors.</p>
+  </section>
+</main>
